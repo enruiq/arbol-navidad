@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Generador de árbol de Navidad con nombres</title>
+<style>
+:root{--bg:#f6f3ee;--panel:#fff;--ink:#1f2a24;--muted:#6b756f;--line:#e2ddd3;--accent:#1f7a4d;--accent-ink:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#161a18;--panel:#1f2522;--ink:#eef2ee;--muted:#9aa59f;--line:#333b37;--accent:#3fb97a;--accent-ink:#06150d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,Segoe UI,sans-serif}
+.wrap{display:grid;grid-template-columns:340px 1fr;gap:20px;max-width:1100px;margin:0 auto;padding:20px 16px}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 16px;font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+label{display:block;font-weight:600;font-size:13px;margin:14px 0 5px}
+label:first-of-type{margin-top:0}
+textarea,select,input[type=text],input[type=number]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{height:130px;resize:vertical}
+.row{display:flex;gap:10px;align-items:center}
+.row>*{flex:1}
+input[type=color]{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400;margin:8px 0 0}
+.chk input{width:auto}
+.small{font-size:12px;color:var(--muted);font-weight:400}
+.btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+button{flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+button.main{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.stage{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+@media (max-width:1000px){.stage{grid-template-columns:1fr}}
+.pv{border-radius:12px;border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:480px;justify-content:center}
+.pv h2{font-size:13px;margin:0;font-weight:600;align-self:flex-start}
+.pv svg{max-width:100%;max-height:70vh;height:auto}
+.leg{font-size:12px;align-self:flex-start;display:flex;gap:12px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+#msg{color:var(--muted);font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>🎄 Árbol de Navidad con nombres</h1>
+    <p class="sub">Las letras se solapan y se sueldan en una sola pieza. SVG con línea de corte (rojo) y de marcado (azul).</p>
+    <div class="panel">
+      <label for="names">Nombres (uno por línea o separados por comas)</label>
+      <textarea id="names">Saul
+Ruben
+Laura
+Enrique
+Adriana</textarea>
+      <label class="chk"><input type="checkbox" id="sort"> Ordenar de más corto a más largo</label>
+
+      <div class="row" style="margin-top:14px">
+        <div><label for="year" style="margin-top:0">Texto inferior</label><input type="text" id="year" value="2026"></div>
+        <div><label for="font" style="margin-top:0">Letra</label>
+          <select id="font"><option value="titan">Titan One</option><option value="lilita">Lilita One</option><option value="chango">Chango</option><option value="bowlby">Bowlby One</option></select></div>
+      </div>
+
+      <label for="fontFile">Cargar tu fuente (Social Club .ttf/.otf/.woff) <span class="small">— se guarda como predeterminada</span></label>
+      <input type="file" id="fontFile" accept=".ttf,.otf,.woff">
+      <button id="fontReset" style="margin-top:6px;flex:none;padding:6px 10px;font-weight:400;display:none">Quitar fuente cargada</button>
+
+
+      <div class="row" style="margin-top:14px">
+        <div><label for="cText" style="margin-top:0">Letras</label><input type="color" id="cText" value="#ffffff"></div>
+        <div><label for="cBase" style="margin-top:0">Contorno</label><input type="color" id="cBase" value="#c9a27a"></div>
+        <div><label for="cBg" style="margin-top:0">Fondo</label><input type="color" id="cBg" value="#2f5d3a"></div>
+      </div>
+
+      <label for="track">Solape entre letras <span class="small" id="trackV"></span></label>
+      <input type="range" id="track" min="0" max="20" value="5">
+      <label for="gap">Solape entre líneas <span class="small" id="gapV"></span></label>
+      <input type="range" id="gap" min="-30" max="10" value="-2">
+      <label for="maxH">Altura máx. de letra <span class="small" id="maxHV"></span></label>
+      <input type="range" id="maxH" min="40" max="140" value="80">
+      <label for="grow">Ensanche del árbol <span class="small" id="growV"></span></label>
+      <input type="range" id="grow" min="0" max="100" value="55">
+      <label for="outline">Grosor del contorno base <span class="small" id="outlineV"></span></label>
+      <input type="range" id="outline" min="4" max="40" value="14">
+
+      <label class="chk"><input type="checkbox" id="star" checked> Estrella arriba</label>
+      <label class="chk"><input type="checkbox" id="hole" checked> Argolla para colgar</label>
+      <label class="chk"><input type="checkbox" id="base" checked> Incluir contorno base (capa de madera)</label>
+
+      <label for="widthCm">Ancho al exportar (cm)</label>
+      <input type="number" id="widthCm" value="10" min="2" max="60" step="0.5">
+
+      <div class="row" style="margin-top:14px">
+        <div><label for="thBase" style="margin-top:0">Grosor base 3D (mm)</label><input type="number" id="thBase" value="1.2" min="0.4" max="10" step="0.2"></div>
+        <div><label for="thText" style="margin-top:0">Grosor letras 3D (mm)</label><input type="number" id="thText" value="1.2" min="0.4" max="10" step="0.2"></div>
+      </div>
+
+      <div class="btns">
+        <button class="main" id="dlSvg">Descargar SVG (xTool)</button>
+        <button class="main" id="dl3mf">Descargar 3MF (Bambu Lab)</button>
+        <button id="dlPng">Descargar PNG</button>
+      </div>
+      <div id="msg"></div>
+    </div>
+  </div>
+  <div class="stage" id="stage"></div>
+</div>
+
+<script>/*OPENTYPE*/</script>
+<script>/*PAPER*/</script>
+<script>/*EARCUT*/</script>
+<script>/*OFFSET*/</script>
+<script>
+const FONT_B64 = /*FONTS*/;
+const fonts = {};
+for (const k in FONT_B64) {
+  const bin = atob(FONT_B64[k]);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  fonts[k] = opentype.parse(buf.buffer);
+}
+paper.setup(document.createElement('canvas'));
+
+const $ = id => document.getElementById(id);
+const f = n => (Math.round(n * 100) / 100).toString();
+
+function pathD(path, s, ox, oy) {
+  let d = '';
+  for (const c of path.commands) {
+    if (c.type === 'M' || c.type === 'L') d += c.type + f(c.x * s + ox) + ' ' + f(c.y * s + oy);
+    else if (c.type === 'Q') d += 'Q' + f(c.x1 * s + ox) + ' ' + f(c.y1 * s + oy) + ' ' + f(c.x * s + ox) + ' ' + f(c.y * s + oy);
+    else if (c.type === 'C') d += 'C' + f(c.x1 * s + ox) + ' ' + f(c.y1 * s + oy) + ' ' + f(c.x2 * s + ox) + ' ' + f(c.y2 * s + oy) + ' ' + f(c.x * s + ox) + ' ' + f(c.y * s + oy);
+    else if (c.type === 'Z') d += 'Z';
+  }
+  return d;
+}
+
+function starD(cx, cy, R) {
+  const r = R * 0.5, pts = [];
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R;
+    pts.push(f(cx + rr * Math.cos(a)) + ' ' + f(cy + rr * Math.sin(a)));
+  }
+  return 'M' + pts.join('L') + 'Z';
+}
+
+function getNames() {
+  let n = $('names').value.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean).map(s => s.toUpperCase());
+  if ($('sort').checked) n = n.map((s, i) => [s, i]).sort((a, b) => a[0].length - b[0].length || a[1] - b[1]).map(x => x[0]);
+  return n;
+}
+
+function uniteAll(list) {
+  let u = null;
+  for (const it of list) u = u ? u.unite(it, { insert: false }) : it.clone({ insert: false });
+  return u;
+}
+const dOf = p => (p && p.pathData) ? p.pathData : '';
+
+// Genera toda la geometría: piezas, unión (corte), marcado y contorno base
+function geometry() {
+  paper.project.clear();
+  const font = fonts[$('font').value];
+  const upm = font.unitsPerEm;
+  const lines = getNames();
+  const year = $('year').value.trim().toUpperCase();
+  if (year) lines.push(year);
+  if (!lines.length) return null;
+
+  const outline = +$('outline').value, maxH = +$('maxH').value, gap = +$('gap').value;
+  const track = +$('track').value, grow = +$('grow').value / 100;
+  const wMax = 420, wMin = wMax * (1 - 0.75 * grow);
+  const items = [];
+  let y = 0, starItem = null;
+
+  if ($('star').checked) {
+    const R = 46;
+    starItem = new paper.CompoundPath(starD(0, R, R));
+    items.push(starItem);
+    y += R * 1.81 + Math.min(gap, 0) * 0.6;
+  }
+  const n = lines.length;
+  // Construye una línea de texto; aumenta el solape horizontal hasta que cada letra toque a la siguiente
+  function makeLine(t, tw, yTop) {
+    let tr = track, res;
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const glyphs = [];
+      let x = 0, x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+      for (const ch of t) {
+        const g = font.charToGlyph(ch);
+        const p = g.getPath(x, 0, 100);
+        if (p.commands.length) {
+          const b = p.getBoundingBox();
+          x1 = Math.min(x1, b.x1); y1 = Math.min(y1, b.y1); x2 = Math.max(x2, b.x2); y2 = Math.max(y2, b.y2);
+          glyphs.push(p);
+        }
+        x += g.advanceWidth * 100 / upm - tr;
+      }
+      if (!glyphs.length) return null;
+      const bw = x2 - x1, bh = y2 - y1;
+      const s = Math.min(tw / bw, maxH / bh);
+      const ox = -(x1 + x2) / 2 * s, oy = yTop - y1 * s;
+      const its = glyphs.map(p => new paper.CompoundPath(pathD(p, s, ox, oy)));
+      let ok = true;
+      for (let k = 1; k < its.length && ok; k++) ok = touches(its[k - 1], its[k]);
+      res = { its, h: bh * s };
+      if (ok) break;
+      its.forEach(it => it.remove());
+      tr += 1;
+      if (attempt === 39) { res.its = glyphs.map(p => new paper.CompoundPath(pathD(p, s, ox, oy))); }
+    }
+    return res;
+  }
+  const touches = (a, b) => a.bounds.intersects(b.bounds) && (a.intersects(b) || a.contains(b.interiorPoint) || b.contains(a.interiorPoint));
+  // nº de letras de la línea que tocan alguna pieza de la línea anterior
+  const countTouch = (cur, prev) => cur.filter(a => prev.some(b => touches(a, b))).length;
+
+  let prevIts = starItem ? [starItem] : null;
+  lines.forEach((t, i) => {
+    const tw = n === 1 ? wMax : wMin + (wMax - wMin) * (i / (n - 1));
+    let line = makeLine(t, tw, y);
+    if (!line) return;
+    if (prevIts) {
+      // exigir contacto firme con la línea anterior: al menos 3 letras (o todas si hay menos); si no, subirla
+      // toda letra que quede bajo la línea anterior debe tocarla (con tope para no estropear la lectura)
+      const px1 = Math.min(...prevIts.map(p => p.bounds.left)), px2 = Math.max(...prevIts.map(p => p.bounds.right));
+      const elig = prevIts.length === 1 ? line.its : line.its.filter(a => a.bounds.center.x >= px1 && a.bounds.center.x <= px2);
+      const needAll = prevIts.length === 1 ? 1 : elig.length;
+      let shift = 0;
+      if (prevIts.length === 1) {
+        // estrella: exigir solape real (área), no un simple roce, para que no se desprenda al cortar
+        const ovl = () => line.its.reduce((s, a) => { try { return s + Math.abs(a.intersect(prevIts[0], { insert: false }).area || 0); } catch (e) { return s; } }, 0);
+        while (ovl() < 300 && shift < 45) {
+          line.its.forEach(it => it.translate(new paper.Point(0, -1)));
+          shift += 1;
+        }
+      }
+      while (countTouch(elig, prevIts) < needAll && shift < 30) {
+        line.its.forEach(it => it.translate(new paper.Point(0, -1)));
+        shift += 1;
+      }
+      y -= shift;
+    }
+    items.push(...line.its);
+    y += line.h + gap;
+    prevIts = line.its;
+  });
+
+  let ring = null, holeC = null;
+  if ($('hole').checked) {
+    const hr = 20, hy = -hr * 0.45;
+    ring = new paper.Path.Circle({ center: [0, hy], radius: hr });
+    holeC = new paper.Path.Circle({ center: [0, hy], radius: hr * 0.4 });
+    items.push(ring);
+  }
+
+  let cut = uniteAll(items);
+  let base = null;
+  if ($('base').checked) {
+    try {
+      base = paperjsOffset.PaperOffset.offset(cut, outline, { join: 'round', insert: false });
+      // capa base maciza: quedarse solo con el contorno exterior (el mayor)
+      if (base.children && base.children.length > 1) {
+        let big = base.children[0];
+        for (const c of base.children) if (Math.abs(c.area) > Math.abs(big.area)) big = c;
+        base = big.clone({ insert: false });
+      }
+      if (holeC) base = base.subtract(holeC, { insert: false });
+    } catch (e) { console.warn('offset', e); }
+  }
+  if (holeC) cut = cut.subtract(holeC, { insert: false });
+
+  // Marcado: partes del contorno de cada pieza que quedan dentro de sus vecinas
+  const score = [];
+  items.forEach((it, i) => {
+    if (it === ring) return; // la argolla no se marca: predomina la estrella
+    const nb = items.filter((o, j) => j !== i && o.bounds.intersects(it.bounds));
+    if (!nb.length) return;
+    try {
+      const pieces = it.intersect(uniteAll(nb), { insert: false, trace: false });
+      const d = dOf(pieces);
+      if (d) score.push(d);
+    } catch (e) { console.warn('score', e); }
+  });
+
+  let bounds = cut.bounds;
+  if (base) bounds = bounds.unite(base.bounds);
+  return { cutD: dOf(cut), baseD: base ? dOf(base) : '', scoreD: score.join(''), bounds };
+}
+
+function svgFinal(g, vb) {
+  const cT = $('cText').value, cB = $('cBase').value;
+  return `<g id="final">` +
+    (g.baseD ? `<path d="${g.baseD}" fill="${cB}" fill-rule="evenodd"/>` : '') +
+    `<path d="${g.cutD}" fill="${cT}" fill-rule="evenodd"/>` +
+    `<path d="${g.scoreD}" fill="none" stroke="${cB}" stroke-width="1.6" stroke-linejoin="round"/></g>`;
+}
+function svgLines(g, w) {
+  return `<g id="base" fill="none" stroke="#00a000" stroke-width="${w}">${g.baseD ? `<path d="${g.baseD}"/>` : ''}</g>` +
+    `<g id="marcado" fill="none" stroke="#0000ff" stroke-width="${w}"><path d="${g.scoreD}"/></g>` +
+    `<g id="corte" fill="none" stroke="#ff0000" stroke-width="${w}"><path d="${g.cutD}"/></g>`;
+}
+function viewBoxOf(g, pad) {
+  const b = g.bounds;
+  return { x: b.x - pad, y: b.y - pad, w: b.width + pad * 2, h: b.height + pad * 2 };
+}
+
+let last = null;
+function render() {
+  $('trackV').textContent = $('track').value + '%';
+  $('gapV').textContent = $('gap').value;
+  $('maxHV').textContent = $('maxH').value;
+  $('growV').textContent = $('grow').value + '%';
+  $('outlineV').textContent = $('outline').value;
+  const g = geometry();
+  last = g;
+  const stage = $('stage');
+  if (!g) { stage.innerHTML = ''; $('msg').textContent = 'Escribe al menos un nombre.'; return; }
+  $('msg').textContent = '';
+  const v = viewBoxOf(g, 8);
+  const vb = [v.x, v.y, v.w, v.h].map(f).join(' '), wpx = Math.min(380, v.w * 1.2);
+  const mk = body => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${wpx}">${body}</svg>`;
+  stage.innerHTML =
+    `<div class="pv" style="background:${$('cBg').value}"><h2 style="color:#fff">Vista real</h2>${mk(svgFinal(g))}</div>` +
+    `<div class="pv" style="background:#fff;color:#222"><h2>Vista SVG (lo que se exporta)</h2>${mk(svgLines(g, 1))}` +
+    `<div class="leg"><span><i style="background:#f00"></i>Corte</span><span><i style="background:#00f"></i>Marcado</span>${g.baseD ? '<span><i style="background:#00a000"></i>Base</span>' : ''}</div></div>`;
+}
+
+function exportSvg() {
+  const g = last || geometry();
+  const v = viewBoxOf(g, 4);
+  const wcm = Math.max(1, +$('widthCm').value || 10);
+  const hcm = wcm * v.h / v.w;
+  const sw = v.w / (wcm * 37.8); // ~0,26 mm de línea
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f(wcm)}cm" height="${f(hcm)}cm" viewBox="${[v.x, v.y, v.w, v.h].map(f).join(' ')}">${svgLines(g, f(sw * 1))}</svg>`;
+  return { svg, w: v.w, h: v.h, g };
+}
+
+function download(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+$('dlSvg').onclick = () => {
+  const { svg } = exportSvg();
+  download(new Blob([`<?xml version="1.0" encoding="UTF-8"?>\n` + svg], { type: 'image/svg+xml' }), 'arbol-navidad.svg');
+};
+$('dlPng').onclick = () => {
+  const g = last || geometry();
+  const v = viewBoxOf(g, 8), scale = 4;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${v.w * scale}" height="${v.h * scale}" viewBox="${[v.x, v.y, v.w, v.h].map(f).join(' ')}">${svgFinal(g)}</svg>`;
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = Math.round(v.w * scale); c.height = Math.round(v.h * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    c.toBlob(b => download(b, 'arbol-navidad.png'));
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+};
+
+// ---------- Exportar 3MF (Bambu Lab): base + letras como dos piezas de color ----------
+function ringsToPolys(d) {
+  const cp = new paper.CompoundPath(d);
+  cp.flatten(0.25);
+  const kids = cp.children && cp.children.length ? cp.children : [cp];
+  const rings = kids.map(c => c.segments.map(s => [s.point.x, -s.point.y])).filter(r => r.length >= 3);
+  const area = r => { let a = 0; for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length]; a += p[0] * q[1] - q[0] * p[1]; } return a / 2; };
+  const inside = (pt, r) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const a = r[i], b = r[j]; if ((a[1] > pt[1]) !== (b[1] > pt[1]) && pt[0] < (b[0] - a[0]) * (pt[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
+  const ar = rings.map(area);
+  const cont = rings.map((r, i) => rings.map((o, j) => j !== i && inside(r[0], o)));
+  const depth = cont.map(row => row.filter(Boolean).length);
+  const polys = [];
+  const idxOuter = new Map();
+  rings.forEach((r, i) => { if (depth[i] % 2 === 0) { idxOuter.set(i, polys.length); polys.push({ outer: ar[i] > 0 ? r : r.slice().reverse(), holes: [] }); } });
+  rings.forEach((r, i) => {
+    if (depth[i] % 2 === 0) return;
+    let best = -1;
+    rings.forEach((o, j) => { if (cont[i][j] && depth[j] === depth[i] - 1 && (best < 0 || Math.abs(ar[j]) < Math.abs(ar[best]))) best = j; });
+    if (best >= 0 && idxOuter.has(best)) polys[idxOuter.get(best)].holes.push(ar[i] < 0 ? r : r.slice().reverse());
+  });
+  return polys;
+}
+
+function extrude(d, z0, z1, scale, offX, offY) {
+  const verts = [], tris = [], map = new Map();
+  const vid = (x, y, z) => {
+    const X = (x * scale + offX).toFixed(3), Y = (y * scale + offY).toFixed(3), Z = z.toFixed(3);
+    const k = X + ',' + Y + ',' + Z;
+    let i = map.get(k);
+    if (i === undefined) { i = verts.length; verts.push([X, Y, Z]); map.set(k, i); }
+    return i;
+  };
+  for (const poly of ringsToPolys(d)) {
+    const all = [poly.outer, ...poly.holes];
+    const flat = [], hi = [];
+    all.forEach((r, k) => { if (k) hi.push(flat.length / 2); r.forEach(p => flat.push(p[0], p[1])); });
+    const T = earcut(flat, hi);
+    const pt = i => [flat[2 * i], flat[2 * i + 1]];
+    for (let i = 0; i < T.length; i += 3) {
+      let a = pt(T[i]), b = pt(T[i + 1]), c = pt(T[i + 2]);
+      if ((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]) < 0) [b, c] = [c, b];
+      tris.push([vid(a[0], a[1], z1), vid(b[0], b[1], z1), vid(c[0], c[1], z1)]);
+      tris.push([vid(a[0], a[1], z0), vid(c[0], c[1], z0), vid(b[0], b[1], z0)]);
+    }
+    for (const r of all) for (let e = 0; e < r.length; e++) {
+      const a = r[e], b = r[(e + 1) % r.length];
+      const a0 = vid(a[0], a[1], z0), b0 = vid(b[0], b[1], z0), b1 = vid(b[0], b[1], z1), a1 = vid(a[0], a[1], z1);
+      if (a0 === b0) continue;
+      tris.push([a0, b0, b1], [a0, b1, a1]);
+    }
+  }
+  return { verts, tris };
+}
+
+const meshXml = m => `<mesh><vertices>${m.verts.map(v => `<vertex x="${v[0]}" y="${v[1]}" z="${v[2]}"/>`).join('')}</vertices><triangles>${m.tris.filter(t => t[0] !== t[1] && t[1] !== t[2] && t[0] !== t[2]).map(t => `<triangle v1="${t[0]}" v2="${t[1]}" v3="${t[2]}"/>`).join('')}</triangles></mesh>`;
+
+const crcT = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = u => { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = crcT[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+function zipStore(files) {
+  const enc = new TextEncoder(), parts = [], central = [];
+  let off = 0;
+  for (const [name, text] of files) {
+    const nm = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, 0, true); h.setUint16(12, 0x21, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+    h.setUint16(26, nm.length, true); h.setUint16(28, 0, true);
+    parts.push(new Uint8Array(h.buffer), nm, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, 0, true); c.setUint16(14, 0x21, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, nm.length, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), nm);
+    off += 30 + nm.length + data.length;
+  }
+  const csize = central.reduce((a, b) => a + b.length, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(e.buffer)], { type: 'model/3mf' });
+}
+
+$('dl3mf').onclick = () => {
+  try {
+    const g = last || geometry();
+    if (!g) return;
+    const v = viewBoxOf(g, 4);
+    const mmW = Math.max(20, (+$('widthCm').value || 10) * 10);
+    const sc = mmW / v.w;
+    const tb = +$('thBase').value || 1.2, tt = +$('thText').value || 1.2;
+    const cx = g.bounds.center.x, cy = -g.bounds.center.y;
+    const ox = -cx * sc, oy = -cy * sc;
+    const baseD = g.baseD || g.cutD;
+    const base = extrude(baseD, 0, tb, sc, ox, oy);
+    const text = extrude(g.cutD, tb, tb + tt, sc, ox, oy);
+    const hex = c => c.replace('#', '').toUpperCase() + 'FF';
+    const model = `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xml:lang="es-ES" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+<metadata name="Title">Arbol de Navidad con nombres</metadata>
+<resources>
+<basematerials id="1"><base name="Base" displaycolor="#${hex($('cBase').value)}"/><base name="Letras" displaycolor="#${hex($('cText').value)}"/></basematerials>
+<object id="2" name="Base" type="model" pid="1" pindex="0">${meshXml(base)}</object>
+<object id="3" name="Letras" type="model" pid="1" pindex="1">${meshXml(text)}</object>
+<object id="4" name="Arbol de Navidad" type="model"><components><component objectid="2"/><component objectid="3"/></components></object>
+</resources>
+<build><item objectid="4" transform="1 0 0 0 1 0 0 0 1 128 128 0"/></build>
+</model>`;
+    const ct = `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>`;
+    const rels = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>`;
+    download(zipStore([['[Content_Types].xml', ct], ['_rels/.rels', rels], ['3D/3dmodel.model', model]]), 'arbol-navidad.3mf');
+    $('msg').textContent = `3MF: ${f(mmW)} mm de ancho, base ${tb} mm + letras ${tt} mm (${base.tris.length + text.tris.length} triángulos).`;
+  } catch (err) { console.error(err); $('msg').textContent = 'Error al generar el 3MF: ' + err.message; }
+};
+
+// Fuente propia: se carga desde archivo y se recuerda en este navegador
+function useCustomFont(buf, label) {
+  fonts.custom = opentype.parse(buf);
+  const sel = $('font');
+  let o = sel.querySelector('option[value=custom]');
+  if (!o) { o = document.createElement('option'); o.value = 'custom'; sel.insertBefore(o, sel.firstChild); }
+  o.textContent = label;
+  sel.value = 'custom';
+  $('fontReset').style.display = '';
+}
+const b64 = buf => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); };
+$('fontFile').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const buf = await file.arrayBuffer();
+    const name = file.name.replace(/\.[^.]+$/, '');
+    useCustomFont(buf, name + ' (tu fuente)');
+    try { localStorage.setItem('arbolFont', JSON.stringify({ name, data: b64(buf) })); } catch (_) {}
+    render();
+  } catch (err) { $('msg').textContent = 'No se pudo leer esa fuente.'; }
+});
+$('fontReset').onclick = () => {
+  try { localStorage.removeItem('arbolFont'); } catch (_) {}
+  const o = $('font').querySelector('option[value=custom]'); if (o) o.remove();
+  delete fonts.custom; $('font').value = 'titan'; $('fontReset').style.display = 'none'; render();
+};
+try {
+  const st = JSON.parse(localStorage.getItem('arbolFont') || 'null');
+  if (st) { const bin = atob(st.data), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); useCustomFont(u.buffer, st.name + ' (tu fuente)'); }
+} catch (_) {}
+
+let timer;
+document.querySelectorAll('input,textarea,select').forEach(e => e.addEventListener('input', () => {
+  clearTimeout(timer); timer = setTimeout(render, 120);
+}));
+render();
+</script>
+</body>
+</html>
