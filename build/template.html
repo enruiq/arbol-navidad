@@ -282,36 +282,41 @@ function geometry() {
     y += R * 1.81 + Math.min(gap, 0) * 0.6;
   }
   const n = lines.length;
-  // Construye una línea de texto; aumenta el solape horizontal hasta que cada letra toque a la siguiente
+  // Construye una línea de texto ajustando cada par de letras por separado:
+  // la letra se acerca a la anterior justo hasta tocarla y luego se solapa una cantidad fija.
+  // Así un par difícil (p. ej. V-A) no obliga a que el resto (L-E) se monten demasiado.
   function makeLine(t, tw, yTop) {
-    let tr = track, res;
-    for (let attempt = 0; attempt < 40; attempt++) {
-      const glyphs = [];
-      let x = 0, x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
-      for (const ch of t) {
-        const g = font.charToGlyph(ch);
-        const p = g.getPath(x, 0, 100);
-        if (p.commands.length) {
-          const b = p.getBoundingBox();
-          x1 = Math.min(x1, b.x1); y1 = Math.min(y1, b.y1); x2 = Math.max(x2, b.x2); y2 = Math.max(y2, b.y2);
-          glyphs.push(p);
-        }
-        x += g.advanceWidth * 100 / upm - tr;
+    const ov = Math.max(1, track); // solape tras el contacto, en % del tamaño de letra
+    const its = [];
+    let x = 0, prev = null;
+    for (const ch of t) {
+      const g = font.charToGlyph(ch);
+      const adv = g.advanceWidth * 100 / upm;
+      const p = g.getPath(0, 0, 100);
+      if (!p.commands.length) { x += adv; continue; } // espacio
+      const it = new paper.CompoundPath(pathD(p, 1, 0, 0));
+      if (!prev) { its.push(it); prev = { it, x: 0 }; x = adv; continue; }
+      // búsqueda binaria del desplazamiento en el que la letra justo toca a la anterior
+      const at = X => { it.position = it.position.add(new paper.Point(X - it.data.x, 0)); it.data.x = X; return touches(prev.it, it); };
+      it.data.x = 0;
+      let hi = x + adv * 0.15, lo = prev.x;
+      if (at(hi)) {
+        // ya se toca en su posición natural: se deja ahí
+      } else {
+        for (let k = 0; k < 14; k++) { const mid = (lo + hi) / 2; if (at(mid)) lo = mid; else hi = mid; }
+        hi = lo;
       }
-      if (!glyphs.length) return null;
-      const bw = x2 - x1, bh = y2 - y1;
-      const s = Math.min(tw / bw, maxH / bh);
-      const ox = -(x1 + x2) / 2 * s, oy = yTop - y1 * s;
-      const its = glyphs.map(p => new paper.CompoundPath(pathD(p, s, ox, oy)));
-      let ok = true;
-      for (let k = 1; k < its.length && ok; k++) ok = touches(its[k - 1], its[k]);
-      res = { its, h: bh * s };
-      if (ok) break;
-      its.forEach(it => it.remove());
-      tr += 1;
-      if (attempt === 39) { res.its = glyphs.map(p => new paper.CompoundPath(pathD(p, s, ox, oy))); }
+      at(hi - ov);
+      its.push(it);
+      prev = { it, x: hi - ov };
+      x = hi - ov + adv;
     }
-    return res;
+    if (!its.length) return null;
+    const b = its.reduce((u, i) => u ? u.unite(i.bounds) : i.bounds.clone(), null);
+    const s = Math.min(tw / b.width, maxH / b.height);
+    const cx = b.center.x, top = b.top;
+    for (const i of its) { i.scale(s, new paper.Point(cx, top)); i.translate(new paper.Point(-cx, yTop - top)); }
+    return { its, h: b.height * s };
   }
   const touches = (a, b) => a.bounds.intersects(b.bounds) && (a.intersects(b) || a.contains(b.interiorPoint) || b.contains(a.interiorPoint));
   // nº de letras de la línea que tocan alguna pieza de la línea anterior
@@ -357,6 +362,8 @@ function geometry() {
   }
 
   let cut = uniteAll(items);
+  // quitar astillas diminutas que a veces deja la unión de formas (no son piezas reales)
+  if (cut.children) cut.children.slice().forEach(c => { if (Math.abs(c.area) < 4) c.remove(); });
   let base = null;
   if ($('base').checked) {
     try {
