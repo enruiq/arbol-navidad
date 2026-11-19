@@ -3,105 +3,207 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Generador de árbol de Navidad con nombres</title>
+<title>Árbol de Navidad con nombres</title>
+<link rel="icon" href="/*AVATAR*/">
+<link rel="apple-touch-icon" href="/*AVATAR*/">
 <style>
-:root{--bg:#f6f3ee;--panel:#fff;--ink:#1f2a24;--muted:#6b756f;--line:#e2ddd3;--accent:#1f7a4d;--accent-ink:#fff}
-@media (prefers-color-scheme:dark){:root{--bg:#161a18;--panel:#1f2522;--ink:#eef2ee;--muted:#9aa59f;--line:#333b37;--accent:#3fb97a;--accent-ink:#06150d}}
+:root{
+  --bg:#f5f5f7;--card:#ffffff;--ink:#1d1d1f;--muted:#6e6e73;--line:#d2d2d7;--soft:#e8e8ed;
+  --accent:#0071e3;--accent-hover:#0077ed;--accent-ink:#fff;--bar:rgba(245,245,247,.72);
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 28px rgba(0,0,0,.06);--seg:#e3e3e8;--seg-on:#fff;
+  color-scheme:light dark
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--muted:#98989d;--line:#38383a;--soft:#2c2c2e;
+  --accent:#0a84ff;--accent-hover:#409cff;--accent-ink:#fff;--bar:rgba(22,22,23,.72);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);--seg:#2c2c2e;--seg-on:#636366
+}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,Segoe UI,sans-serif}
-.wrap{display:grid;grid-template-columns:340px 1fr;gap:20px;max-width:1100px;margin:0 auto;padding:20px 16px}
-@media (max-width:760px){.wrap{grid-template-columns:1fr}}
-h1{font-size:20px;margin:0 0 4px}
-.sub{color:var(--muted);margin:0 0 16px;font-size:13px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
-label{display:block;font-weight:600;font-size:13px;margin:14px 0 5px}
-label:first-of-type{margin-top:0}
-textarea,select,input[type=text],input[type=number]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
-textarea{height:130px;resize:vertical}
-.row{display:flex;gap:10px;align-items:center}
-.row>*{flex:1}
-input[type=color]{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
-input[type=range]{width:100%;accent-color:var(--accent)}
-.chk{display:flex;gap:8px;align-items:center;font-weight:400;margin:8px 0 0}
-.chk input{width:auto}
-.small{font-size:12px;color:var(--muted);font-weight:400}
-.btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-button{flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
-button.main{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.stage{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
-@media (max-width:1000px){.stage{grid-template-columns:1fr}}
-.pv{border-radius:12px;border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:480px;justify-content:center}
-.pv h2{font-size:13px;margin:0;font-weight:600;align-self:flex-start}
-.pv svg{max-width:100%;max-height:70vh;height:auto}
-.leg{font-size:12px;align-self:flex-start;display:flex;gap:12px}
-.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
-#msg{color:var(--muted);font-size:13px;margin-top:8px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.47 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+
+/* Barra superior translúcida */
+.bar{position:sticky;top:0;z-index:20;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.bar-in{max-width:1280px;margin:0 auto;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar-title{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 0 2px var(--card),0 0 0 3px var(--line)}
+
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px 48px}
+.hero{padding:44px 0 28px;text-align:center}
+.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.08;letter-spacing:-.03em;font-weight:700;margin:0 0 10px}
+.hero p{font-size:clamp(16px,2vw,20px);color:var(--muted);margin:0 auto;max-width:640px;letter-spacing:-.015em}
+
+.grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+/* Panel de controles */
+.controls{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 12px}
+.field{margin-top:14px}
+.field:first-of-type{margin-top:0}
+.lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;font-weight:500;margin-bottom:6px}
+.lbl .val{color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
+textarea,select,input[type=text],input[type=number]{width:100%;padding:10px 12px;border:1px solid transparent;border-radius:10px;background:var(--soft);color:var(--ink);font:inherit;outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+textarea:focus,select:focus,input[type=text]:focus,input[type=number]:focus{background:var(--card);border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
+textarea{height:140px;resize:vertical;line-height:1.5}
+select{appearance:none;-webkit-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2386868b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.row{display:flex;gap:12px}
+.row>*{flex:1;min-width:0}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* Deslizadores */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line);outline:none;margin:10px 0 4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25),0 0 0 .5px rgba(0,0,0,.08);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border:none;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer}
+input[type=range]::-moz-range-progress{background:var(--accent);height:4px;border-radius:4px}
+
+/* Interruptores tipo iOS */
+.toggle{display:flex;justify-content:space-between;align-items:center;padding:11px 0;font-size:15px;cursor:pointer;border-top:1px solid var(--soft)}
+.toggle:first-of-type{border-top:none;padding-top:2px}
+.toggle input{-webkit-appearance:none;appearance:none;width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;cursor:pointer;transition:background .2s;flex:none;margin:0}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:transform .2s}
+.toggle input:checked{background:#34c759}
+.toggle input:checked::after{transform:translateX(18px)}
+
+/* Muestras de color */
+.swatches{display:flex;gap:10px}
+.sw{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer}
+.sw input{-webkit-appearance:none;appearance:none;width:44px;height:44px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+.sw input::-webkit-color-swatch-wrapper{padding:0}
+.sw input::-webkit-color-swatch{border:none;border-radius:50%}
+.sw input::-moz-color-swatch{border:none;border-radius:50%}
+
+/* Botones */
+button,.btn{font:inherit;cursor:pointer;border:none;border-radius:980px;padding:11px 18px;font-weight:500;font-size:15px;transition:background .15s,transform .1s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button:active,.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{background:var(--soft);color:var(--ink)}
+.btn-link{background:none;color:var(--accent);padding:6px 0;font-size:14px}
+.btns{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.file{position:relative;overflow:hidden;width:100%}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* Visor */
+.viewer{position:sticky;top:68px;display:flex;flex-direction:column;gap:12px}
+@media (max-width:900px){.viewer{position:static;order:-1}}
+.viewer-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--seg);border-radius:10px;padding:2px}
+.seg button{border-radius:8px;padding:6px 18px;font-size:14px;font-weight:500;background:none;color:var(--ink)}
+.seg button.on{background:var(--seg-on);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.leg{font-size:13px;color:var(--muted);display:flex;gap:14px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-.5px}
+.stage{border-radius:22px;box-shadow:var(--shadow);height:calc(100vh - 150px);min-height:420px;display:flex;align-items:center;justify-content:center;padding:clamp(16px,4vw,48px);transition:background .25s;overflow:hidden}
+@media (max-width:900px){.stage{height:72vh;min-height:360px}}
+.stage svg{width:100%;height:100%;display:block}
+.stage.corte{background:#fff}
+#msg{color:var(--muted);font-size:13px;min-height:18px;text-align:center}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:center;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+footer .avatar{width:28px;height:28px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div>
-    <h1>🎄 Árbol de Navidad con nombres</h1>
-    <p class="sub">Las letras se solapan y se sueldan en una sola pieza. SVG con línea de corte (rojo) y de marcado (azul).</p>
-    <div class="panel">
-      <label for="names">Nombres (uno por línea o separados por comas)</label>
-      <textarea id="names">Saul
+<header class="bar">
+  <div class="bar-in">
+    <div class="bar-title">🎄 Árbol de Navidad</div>
+    <img class="avatar" src="/*AVATAR*/" alt="Autor">
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Tu árbol, con sus nombres.</h1>
+    <p>Las letras se solapan y se sueldan en una sola pieza. Listo para cortar con láser o imprimir en 3D.</p>
+  </section>
+
+  <div class="grid">
+    <aside class="controls">
+      <div class="card">
+        <h3>Nombres</h3>
+        <div class="field">
+          <textarea id="names" aria-label="Nombres, uno por línea o separados por comas">Saul
 Ruben
 Laura
 Enrique
 Adriana</textarea>
-      <label class="chk"><input type="checkbox" id="sort"> Ordenar de más corto a más largo</label>
-
-      <div class="row" style="margin-top:14px">
-        <div><label for="year" style="margin-top:0">Texto inferior</label><input type="text" id="year" value="2026"></div>
-        <div><label for="font" style="margin-top:0">Letra</label>
-          <select id="font"><option value="titan">Titan One</option><option value="lilita">Lilita One</option><option value="chango">Chango</option><option value="bowlby">Bowlby One</option></select></div>
+          <div class="hint">Uno por línea o separados por comas.</div>
+        </div>
+        <label class="toggle" style="margin-top:8px">Ordenar de más corto a más largo<input type="checkbox" id="sort"></label>
       </div>
 
-      <label for="fontFile">Cargar tu fuente (Social Club .ttf/.otf/.woff) <span class="small">— se guarda como predeterminada</span></label>
-      <input type="file" id="fontFile" accept=".ttf,.otf,.woff">
-      <button id="fontReset" style="margin-top:6px;flex:none;padding:6px 10px;font-weight:400;display:none">Quitar fuente cargada</button>
-
-
-      <div class="row" style="margin-top:14px">
-        <div><label for="cText" style="margin-top:0">Letras</label><input type="color" id="cText" value="#ffffff"></div>
-        <div><label for="cBase" style="margin-top:0">Contorno</label><input type="color" id="cBase" value="#c9a27a"></div>
-        <div><label for="cBg" style="margin-top:0">Fondo</label><input type="color" id="cBg" value="#2f5d3a"></div>
+      <div class="card">
+        <h3>Tipografía</h3>
+        <div class="row">
+          <div class="field" style="margin-top:0"><div class="lbl"><label for="year">Texto inferior</label></div><input type="text" id="year" value="2026"></div>
+          <div class="field" style="margin-top:0"><div class="lbl"><label for="font">Letra</label></div>
+            <select id="font"><option value="titan">Titan One</option><option value="lilita">Lilita One</option><option value="chango">Chango</option><option value="bowlby">Bowlby One</option></select></div>
+        </div>
+        <div class="field">
+          <span class="btn btn-secondary file">Cargar tu fuente (.ttf, .otf, .woff)<input type="file" id="fontFile" accept=".ttf,.otf,.woff"></span>
+          <div class="hint">Se recuerda en este navegador como predeterminada.</div>
+          <button id="fontReset" class="btn-link" style="display:none">Quitar fuente cargada</button>
+        </div>
       </div>
 
-      <label for="track">Solape entre letras <span class="small" id="trackV"></span></label>
-      <input type="range" id="track" min="0" max="20" value="5">
-      <label for="gap">Solape entre líneas <span class="small" id="gapV"></span></label>
-      <input type="range" id="gap" min="-30" max="10" value="-2">
-      <label for="maxH">Altura máx. de letra <span class="small" id="maxHV"></span></label>
-      <input type="range" id="maxH" min="40" max="140" value="80">
-      <label for="grow">Ensanche del árbol <span class="small" id="growV"></span></label>
-      <input type="range" id="grow" min="0" max="100" value="55">
-      <label for="outline">Grosor del contorno base <span class="small" id="outlineV"></span></label>
-      <input type="range" id="outline" min="4" max="40" value="14">
-
-      <label class="chk"><input type="checkbox" id="star" checked> Estrella arriba</label>
-      <label class="chk"><input type="checkbox" id="hole" checked> Argolla para colgar</label>
-      <label class="chk"><input type="checkbox" id="base" checked> Incluir contorno base (capa de madera)</label>
-
-      <label for="widthCm">Ancho al exportar (cm)</label>
-      <input type="number" id="widthCm" value="10" min="2" max="60" step="0.5">
-
-      <div class="row" style="margin-top:14px">
-        <div><label for="thBase" style="margin-top:0">Grosor base 3D (mm)</label><input type="number" id="thBase" value="1.2" min="0.4" max="10" step="0.2"></div>
-        <div><label for="thText" style="margin-top:0">Grosor letras 3D (mm)</label><input type="number" id="thText" value="1.2" min="0.4" max="10" step="0.2"></div>
+      <div class="card">
+        <h3>Colores</h3>
+        <div class="swatches">
+          <label class="sw"><input type="color" id="cText" value="#ffffff">Letras</label>
+          <label class="sw"><input type="color" id="cBase" value="#c9a27a">Contorno</label>
+          <label class="sw"><input type="color" id="cBg" value="#2f5d3a">Fondo</label>
+        </div>
       </div>
 
-      <div class="btns">
-        <button class="main" id="dlSvg">Descargar SVG (xTool)</button>
-        <button class="main" id="dl3mf">Descargar 3MF (Bambu Lab)</button>
-        <button id="dlPng">Descargar PNG</button>
+      <div class="card">
+        <h3>Forma</h3>
+        <div class="field"><div class="lbl"><label for="track">Solape entre letras</label><span class="val" id="trackV"></span></div><input type="range" id="track" min="0" max="20" value="5"></div>
+        <div class="field"><div class="lbl"><label for="gap">Solape entre líneas</label><span class="val" id="gapV"></span></div><input type="range" id="gap" min="-30" max="10" value="-2"></div>
+        <div class="field"><div class="lbl"><label for="maxH">Altura máx. de letra</label><span class="val" id="maxHV"></span></div><input type="range" id="maxH" min="40" max="140" value="80"></div>
+        <div class="field"><div class="lbl"><label for="grow">Ensanche del árbol</label><span class="val" id="growV"></span></div><input type="range" id="grow" min="0" max="100" value="55"></div>
+        <div class="field"><div class="lbl"><label for="outline">Grosor del contorno base</label><span class="val" id="outlineV"></span></div><input type="range" id="outline" min="4" max="40" value="14"></div>
       </div>
+
+      <div class="card">
+        <h3>Detalles</h3>
+        <label class="toggle">Estrella arriba<input type="checkbox" id="star" checked></label>
+        <label class="toggle">Argolla para colgar<input type="checkbox" id="hole" checked></label>
+        <label class="toggle">Contorno base (capa de madera)<input type="checkbox" id="base" checked></label>
+      </div>
+
+      <div class="card">
+        <h3>Exportar</h3>
+        <div class="field"><div class="lbl"><label for="widthCm">Ancho final (cm)</label></div><input type="number" id="widthCm" value="10" min="2" max="60" step="0.5"></div>
+        <div class="row field">
+          <div><div class="lbl"><label for="thBase">Base 3D (mm)</label></div><input type="number" id="thBase" value="1.2" min="0.4" max="10" step="0.2"></div>
+          <div><div class="lbl"><label for="thText">Letras 3D (mm)</label></div><input type="number" id="thText" value="1.2" min="0.4" max="10" step="0.2"></div>
+        </div>
+        <div class="btns">
+          <button class="btn-primary" id="dlSvg">Descargar SVG · xTool</button>
+          <button class="btn-primary" id="dl3mf">Descargar 3MF · Bambu Lab</button>
+          <button class="btn-secondary" id="dlPng">Descargar PNG</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="viewer">
+      <div class="viewer-top">
+        <div class="seg" role="tablist" aria-label="Vista">
+          <button role="tab" data-view="real" aria-selected="true" class="on">Real</button>
+          <button role="tab" data-view="corte" aria-selected="false">Corte</button>
+        </div>
+        <div class="leg" id="leg"></div>
+      </div>
+      <div class="stage" id="stage"></div>
       <div id="msg"></div>
-    </div>
+    </section>
   </div>
-  <div class="stage" id="stage"></div>
-</div>
+
+  <footer><img class="avatar" src="/*AVATAR*/" alt="Autor"><span>Hecho a mano · <span id="yr"></span></span></footer>
+</main>
 
 <script>/*OPENTYPE*/</script>
 <script>/*PAPER*/</script>
@@ -271,6 +373,7 @@ function geometry() {
   const score = [];
   items.forEach((it, i) => {
     if (it === ring) return; // la argolla no se marca: predomina la estrella
+    if (it === starItem) return; // el contorno de la estrella no se marca sobre los nombres
     const nb = items.filter((o, j) => j !== i && o.bounds.intersects(it.bounds));
     if (!nb.length) return;
     try {
@@ -292,10 +395,12 @@ function svgFinal(g, vb) {
     `<path d="${g.cutD}" fill="${cT}" fill-rule="evenodd"/>` +
     `<path d="${g.scoreD}" fill="none" stroke="${cB}" stroke-width="1.6" stroke-linejoin="round"/></g>`;
 }
-function svgLines(g, w) {
-  return `<g id="base" fill="none" stroke="#00a000" stroke-width="${w}">${g.baseD ? `<path d="${g.baseD}"/>` : ''}</g>` +
-    `<g id="marcado" fill="none" stroke="#0000ff" stroke-width="${w}"><path d="${g.scoreD}"/></g>` +
-    `<g id="corte" fill="none" stroke="#ff0000" stroke-width="${w}"><path d="${g.cutD}"/></g>`;
+function svgLines(g, w, screen) {
+  // screen: en pantalla el trazo no escala con el zoom (siempre fino y nítido)
+  const ve = screen ? ' vector-effect="non-scaling-stroke"' : '';
+  return `<g id="base" fill="none" stroke="#00a000" stroke-width="${w}">${g.baseD ? `<path d="${g.baseD}"${ve}/>` : ''}</g>` +
+    `<g id="marcado" fill="none" stroke="#0000ff" stroke-width="${w}"><path d="${g.scoreD}"${ve}/></g>` +
+    `<g id="corte" fill="none" stroke="#ff0000" stroke-width="${w}"><path d="${g.cutD}"${ve}/></g>`;
 }
 function viewBoxOf(g, pad) {
   const b = g.bounds;
@@ -311,17 +416,41 @@ function render() {
   $('outlineV').textContent = $('outline').value;
   const g = geometry();
   last = g;
-  const stage = $('stage');
-  if (!g) { stage.innerHTML = ''; $('msg').textContent = 'Escribe al menos un nombre.'; return; }
+  if (!g) { $('stage').innerHTML = ''; $('leg').innerHTML = ''; $('msg').textContent = 'Escribe al menos un nombre.'; return; }
   $('msg').textContent = '';
-  const v = viewBoxOf(g, 8);
-  const vb = [v.x, v.y, v.w, v.h].map(f).join(' '), wpx = Math.min(380, v.w * 1.2);
-  const mk = body => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${wpx}">${body}</svg>`;
-  stage.innerHTML =
-    `<div class="pv" style="background:${$('cBg').value}"><h2 style="color:#fff">Vista real</h2>${mk(svgFinal(g))}</div>` +
-    `<div class="pv" style="background:#fff;color:#222"><h2>Vista SVG (lo que se exporta)</h2>${mk(svgLines(g, 1))}` +
-    `<div class="leg"><span><i style="background:#f00"></i>Corte</span><span><i style="background:#00f"></i>Marcado</span>${g.baseD ? '<span><i style="background:#00a000"></i>Base</span>' : ''}</div></div>`;
+  draw();
 }
+
+// Visor grande: alterna entre la vista real y la de corte sin recalcular la geometría
+let view = 'real';
+try { if (localStorage.getItem('arbolView') === 'corte') view = 'corte'; } catch (_) {}
+function draw() {
+  const g = last, stage = $('stage');
+  document.querySelectorAll('.seg button').forEach(b => {
+    const on = b.dataset.view === view;
+    b.classList.toggle('on', on); b.setAttribute('aria-selected', on);
+  });
+  if (!g) return;
+  const v = viewBoxOf(g, 8);
+  const vb = [v.x, v.y, v.w, v.h].map(f).join(' ');
+  const mk = body => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="xMidYMid meet">${body}</svg>`;
+  stage.classList.toggle('corte', view === 'corte');
+  if (view === 'corte') {
+    stage.style.background = '';
+    stage.innerHTML = mk(svgLines(g, 1.4, true));
+    $('leg').innerHTML = `<span><i style="background:#f00"></i>Corte</span><span><i style="background:#00f"></i>Marcado</span>${g.baseD ? '<span><i style="background:#00a000"></i>Base</span>' : ''}`;
+  } else {
+    stage.style.background = $('cBg').value;
+    stage.innerHTML = mk(svgFinal(g));
+    $('leg').innerHTML = '';
+  }
+}
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  view = b.dataset.view;
+  try { localStorage.setItem('arbolView', view); } catch (_) {}
+  draw();
+}));
+$('yr').textContent = new Date().getFullYear();
 
 function exportSvg() {
   const g = last || geometry();
