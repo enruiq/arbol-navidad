@@ -419,12 +419,13 @@ function geometry() {
   }
   if (holeC) cut = cut.subtract(holeC, { insert: false });
 
-  // Marcado: partes del contorno de cada pieza que quedan dentro de sus vecinas
+  // Marcado con orden de apilado: cada pieza se monta encima de las anteriores
+  // (argolla -> estrella -> letras de izquierda a derecha y de arriba abajo).
+  // Solo se marca el contorno de la pieza de arriba dentro de las que tapa; el de las de abajo queda oculto.
   const score = [];
-  items.forEach((it, i) => {
-    if (it === ring) return; // la argolla no se marca: predomina la estrella
-    if (it === starItem) return; // el contorno de la estrella no se marca sobre los nombres
-    const nb = items.filter((o, j) => j !== i && o.bounds.intersects(it.bounds));
+  const order = ring ? [ring, ...items.filter(o => o !== ring)] : items;
+  order.forEach((it, i) => {
+    const nb = order.slice(0, i).filter(o => o.bounds.intersects(it.bounds));
     if (!nb.length) return;
     try {
       const pieces = it.intersect(uniteAll(nb), { insert: false, trace: false });
